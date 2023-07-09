@@ -32,12 +32,11 @@ from collections import defaultdict
 import pandas as pd
 import requests
 from IPython import display
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 from matplotlib_inline import backend_inline
 
 d2l = sys.modules[__name__]
 
-import numpy as np
 import torch
 import torchvision
 from PIL import Image
@@ -45,6 +44,12 @@ from torch import nn
 from torch.nn import functional as F
 from torch.utils import data
 from torchvision import transforms
+
+# UserWarning: Matplotlib is currently using agg, which is a non-GUI backend,
+# so cannot show the figure.   d2l.plt.show()
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+mpl.use("Qt5Agg")
 
 
 def use_svg_display():
@@ -214,13 +219,12 @@ def show_images(imgs, num_rows, num_cols, titles=None, scale=1.5):
 
 
 def get_dataloader_workers():
-    """Use 4 processes to read the data.
-
-    Defined in :numref:`sec_fashion_mnist`"""
+    """数据加载的线程数"""
+    # return 4 if num_workers is None else num_workers
     return 4
 
 
-def load_data_fashion_mnist(batch_size, resize=None):
+def load_data_fashion_mnist_(batch_size, resize=None):
     """Download the Fashion-MNIST dataset and then load it into memory.
 
     Defined in :numref:`sec_fashion_mnist`"""
@@ -238,7 +242,43 @@ def load_data_fashion_mnist(batch_size, resize=None):
                             num_workers=get_dataloader_workers()))
 
 
-def accuracy(y_hat, y):
+def load_data_fashion_mnist(batch_size, resize=None):
+    """用于获取和读取Fashion-MNIST数据集。 这个函数返回训练集和验证集的数据迭代器。
+
+    Args:
+        batch_size (int): 批量大小，每个小批量包含的样本数量。
+        resize (int or tuple): 用来将图像大小调整为另一种形状。默认为None，表示不调整大小。
+            如果是一个整数，图像将被调整为该整数表示的正方形大小。
+            如果是一个元组，图像将被调整为元组表示的宽度和高度。
+
+    Returns:
+        tuple: 包含训练集和验证集的数据迭代器的元组。每个数据迭代器可以用于迭代获取小批量的数据。
+    """
+    # 将 transforms.ToTensor() 转换操作添加到变换列表中，以将图像数据转换为张量形式
+    # 在 PyTorch 中，transforms.ToTensor() 是一个用于将 PIL 图像或 NumPy 数组转换为张量的变换操作。
+    # 它将图像数据从原始的 PIL.Image 格式或 NumPy 数组格式转换为 PyTorch 张量格式。转换后的张量将具有与原始图像相同
+    # 的形状，并且像素值将被标准化到 [0, 1] 范围内。
+    #
+    # transforms.ToTensor() 操作的输出是一个三维张量，如果原始图像是灰度图像，则形状为 (C, H, W)，
+    # 其中 C 是通道数，H 和 W 分别是高度和宽度。如果原始图像是彩色图像，则形状为 (3, H, W)，
+    # 其中 3 表示红、绿、蓝三个通道。
+    trans = [transforms.ToTensor()]
+    if resize:
+        trans.insert(0, transforms.Resize(resize))
+    # 将变换操作列表 trans 组合成一个可用的转换操作，以便在数据加载过程中一次性应用于数据
+    trans = transforms.Compose(trans)
+    mnist_train = torchvision.datasets.FashionMNIST(root="../data", train=True, transform=trans,
+                                                    download=True)
+    mnist_test = torchvision.datasets.FashionMNIST(root="../data", train=False, transform=trans,
+                                                   download=True)
+    return (data.DataLoader(mnist_train, batch_size, shuffle=True,
+                            num_workers=get_dataloader_workers()),
+            data.DataLoader(mnist_test, batch_size, shuffle=True,
+                            num_workers=get_dataloader_workers())
+            )
+
+
+def accuracy_(y_hat, y):
     """Compute the number of correct predictions.
 
     Defined in :numref:`sec_softmax_scratch`"""
@@ -246,6 +286,18 @@ def accuracy(y_hat, y):
         y_hat = d2l.argmax(y_hat, axis=1)
     cmp = d2l.astype(y_hat, y.dtype) == y
     return float(d2l.reduce_sum(d2l.astype(cmp, y.dtype)))
+
+def accuracy(y_hat, y):
+    """计算预测正确的数量"""
+    # y_hat是矩阵，那么第二个维度存储每个类的预测分数
+    if len(y_hat.shape) > 1 and y_hat.shape[1] > 1:
+        y_hat = y_hat.argmax(axis=1)
+    # 由于等式运算符“`==`”对数据类型很敏感，
+    # 因此我们将`y_hat`的数据类型转换为与`y`的数据类型一致。
+    # 结果是一个包含0（错）和1（对）的张量。
+    cmp = y_hat.type(y.dtype) == y
+    # 求和会得到正确预测的数量
+    return float(cmp.type(y.dtype).sum())
 
 
 def evaluate_accuracy(net, data_iter):
