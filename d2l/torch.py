@@ -115,6 +115,8 @@ def plot(X, Y=None, xlabel=None, ylabel=None, legend=None, xlim=None,
             axes.plot(y, fmt)
     set_axes(axes, xlabel, ylabel, xlim, ylim, xscale, yscale, legend)
 
+    d2l.plt.show()
+
 
 class Timer:
     """Record multiple running times."""
