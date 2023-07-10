@@ -49,7 +49,7 @@ from torchvision import transforms
 # so cannot show the figure.   d2l.plt.show()
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-mpl.use("Qt5Agg")
+mpl.use("TkAgg")
 
 
 def use_svg_display():
@@ -415,6 +415,21 @@ def train_ch3(net, train_iter, test_iter, loss, num_epochs, updater):
     assert train_loss < 0.5, train_loss
     assert train_acc <= 1 and train_acc > 0.7, train_acc
     assert test_acc <= 1 and test_acc > 0.7, test_acc
+
+def train_ch3_noani(net, train_iter, test_iter, loss, num_epochs, updater):
+    """训练模型"""
+    train_metrics = None
+    test_acc = 0.0
+    for epoch in range(num_epochs):
+        train_metrics = train_epoch_ch3(net, train_iter, loss, updater)
+        test_acc = evaluate_accuracy(net, test_iter)
+        # 输出结果
+        print(f'epoch {epoch + 1}, train loss {train_metrics[0] + test_acc:.4f}  '
+              f'train acc {train_metrics[1]:.4f}, test_acc {test_acc:.4f}')
+    train_loss, train_acc = train_metrics
+    assert train_loss < 0.5, train_loss
+    assert 1 >= train_acc > 0.7, train_acc
+    assert 1 >= test_acc > 0.7, test_acc
 
 
 def predict_ch3(net, test_iter, n=6):
