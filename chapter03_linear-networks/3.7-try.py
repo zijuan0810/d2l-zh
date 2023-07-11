@@ -32,4 +32,4 @@ trainer = torch.optim.SGD(net.parameters(), lr=0.1)
 num_epochs = 10
 batch_size = 256
 train_iter, test_iter = d2l.load_data_fashion_mnist(batch_size)
-d2l.train_ch3_noani(net, train_iter, test_iter, loss, num_epochs, trainer)
+d2l.train_ch3(net, train_iter, test_iter, loss, num_epochs, trainer)

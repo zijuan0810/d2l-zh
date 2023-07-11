@@ -49,7 +49,10 @@ from torchvision import transforms
 # so cannot show the figure.   d2l.plt.show()
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+
 mpl.use("TkAgg")
+
+torch.set_printoptions(edgeitems=2, precision=6, linewidth=120, sci_mode=False)
 
 
 def use_svg_display():
@@ -289,6 +292,7 @@ def accuracy_(y_hat, y):
     cmp = d2l.astype(y_hat, y.dtype) == y
     return float(d2l.reduce_sum(d2l.astype(cmp, y.dtype)))
 
+
 def accuracy(y_hat, y):
     """计算预测正确的数量"""
     # y_hat是矩阵，那么第二个维度存储每个类的预测分数
@@ -403,7 +407,7 @@ class Animator:
         display.clear_output(wait=True)
 
 
-def train_ch3(net, train_iter, test_iter, loss, num_epochs, updater):
+def train_ch3_ani(net, train_iter, test_iter, loss, num_epochs, updater):
     """Train a model (defined in Chapter 3).
 
     Defined in :numref:`sec_softmax_scratch`"""
@@ -418,7 +422,8 @@ def train_ch3(net, train_iter, test_iter, loss, num_epochs, updater):
     assert train_acc <= 1 and train_acc > 0.7, train_acc
     assert test_acc <= 1 and test_acc > 0.7, test_acc
 
-def train_ch3_noani(net, train_iter, test_iter, loss, num_epochs, updater):
+
+def train_ch3(net, train_iter, test_iter, loss, num_epochs, updater):
     """训练模型"""
     train_metrics = None
     test_acc = 0.0
